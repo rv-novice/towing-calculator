@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truck Towing Capacity Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        input, button {
+            margin: 5px 0;
+            padding: 5px;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #f0f0f0;
+        }
+        .disclaimer {
+            background-color: #ffe6e6;
+            border: 1px solid #ff9999;
+            padding: 10px;
+            margin-top: 20px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1>Truck Towing Capacity Calculator</h1>
+
+    <div class="description">
+        <h2>About This Tool</h2>
+        <p>This calculator helps you determine if your truck can safely tow a specific trailer. It uses basic truck and trailer specifications to estimate towing compatibility. Truck specs can be obtained by looking for your "Trailing Information" sticker on the driver's side doorjam.</p>
+
+        <h2>How to Use</h2>
+        <ol>
+            <li>Enter your truck's specifications (found on the door jamb sticker):
+                <ul>
+                    <li>GVWR (Gross Vehicle Weight Rating)</li>
+                    <li>Payload capacity</li>
+                    <li>GCWR (Gross Combined Weight Rating)</li>
+                </ul>
+            </li>
+            <li>Enter your trailer's specifications:
+                <ul>
+                    <li>Tongue weight</li>
+                    <li>GVWR (Gross Vehicle Weight Rating)</li>
+                    <li>UVW (Unloaded Vehicle Weight) - optional, used to estimate GVWR if not provided</li>
+                </ul>
+            </li>
+            <li>Click the "Calculate" button to see the results.</li>
+        </ol>
+    </div>
+
+    <div class="disclaimer">
+        <strong>Disclaimer:</strong> This tool provides estimates only and should not be considered a substitute for professional advice, manufacturer guidelines, or your vehicle's owner's manual. Towing capacity can be affected by many factors not accounted for in this simple calculation. Always err on the side of caution and consult with a professional if you're unsure about your vehicle's towing capabilities.
+    </div>
+
+    <h2>Truck Specs</h2>
+    <input type="number" id="truckGVWR" placeholder="Truck GVWR (lbs)">
+    <input type="number" id="payloadCapacity" placeholder="Payload Capacity (lbs)">
+    <input type="number" id="GCWR" placeholder="GCWR (lbs)">
+
+    <h2>Trailer Specs</h2>
+    <input type="number" id="tongueWeight" placeholder="Tongue Weight (lbs)">
+    <input type="number" id="trailerGVWR" placeholder="Trailer GVWR (lbs)">
+    <input type="number" id="trailerUVW" placeholder="Trailer UVW (lbs, optional)">
+
+    <br>
+    <button onclick="calculateTowing()">Calculate</button>
+
+    <div id="result"></div>
+
+    <script>
+        function calculateTowing() {
+            // Get input values
+            const truckGVWR = Number(document.getElementById('truckGVWR').value);
+            const payloadCapacity = Number(document.getElementById('payloadCapacity').value);
+            const GCWR = Number(document.getElementById('GCWR').value);
+            const tongueWeight = Number(document.getElementById('tongueWeight').value);
+            let trailerGVWR = Number(document.getElementById('trailerGVWR').value);
+            const trailerUVW = Number(document.getElementById('trailerUVW').value);
+
+            let resultText = "";
+            let canTow = true;
+
+            // Estimate GVWR if missing
+            if (!trailerGVWR && trailerUVW) {
+                trailerGVWR = trailerUVW * 1.25;
+                resultText += `Estimated Trailer GVWR: ${trailerGVWR.toFixed(2)} lbs<br>`;
+            }
+
+            // Check payload capacity
+            const availablePayload = payloadCapacity - tongueWeight;
+            if (availablePayload < 0) {
+                resultText += "❌ Exceeds payload capacity<br>";
+                canTow = false;
+            } else {
+                resultText += `✅ Available payload: ${availablePayload.toFixed(2)} lbs<br>`;
+            }
+
+            // Check GCWR
+            const combinedWeight = truckGVWR + trailerGVWR;
+            if (combinedWeight > GCWR) {
+                resultText += "❌ Exceeds GCWR<br>";
+                canTow = false;
+            } else {
+                resultText += `✅ GCWR margin: ${(GCWR - combinedWeight).toFixed(2)} lbs<br>`;
+            }
+
+            // Check estimated towing capacity
+            const estTowingCapacity = GCWR - truckGVWR;
+            if (trailerGVWR > estTowingCapacity) {
+                resultText += "❌ Exceeds estimated towing capacity<br>";
+                canTow = false;
+            } else {
+                resultText += `✅ Towing capacity margin: ${(estTowingCapacity - trailerGVWR).toFixed(2)} lbs<br>`;
+            }
+
+            // Final result
+            if (canTow) {
+                resultText = "This truck can likely tow this trailer safely.<br><br>" + resultText;
+            } else {
+                resultText = "This combination may exceed the truck's towing capabilities.<br><br>" + resultText;
+            }
+
+            // Add reminders
+            resultText += "<br><strong>Remember:</strong><br>";
+            resultText += "- It's recommended to get your truck weighed when loaded for the most accurate assessment.<br>";
+            resultText += "- For safety, consider staying 10-20% under maximum ratings.";
+
+            document.getElementById('result').innerHTML = resultText;
+        }
+    </script>
+</body>
+</html>
